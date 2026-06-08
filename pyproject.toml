@@ -1,0 +1,46 @@
+[project]
+name = "finlake-analyst"
+version = "0.1.0"
+description = "AI analyst layer for FinLake Brasil — Text-to-SQL over financial Gold data"
+requires-python = ">=3.12"
+dependencies = [
+    "langchain>=0.3",
+    "langchain-anthropic>=0.3",
+    "langchain-community>=0.3",
+    "langgraph>=0.2",
+    "langfuse>=2.0",
+    "chainlit>=1.3",
+    "psycopg2-binary>=2.9",
+    "sqlalchemy>=2.0",
+    "pydantic-settings>=2.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.4",
+    "deepeval>=1.4",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/finlake_analyst"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "ANN"]
+ignore = []
+
+[tool.ruff.lint.isort]
+known-first-party = ["finlake_analyst"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

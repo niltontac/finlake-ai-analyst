@@ -1,0 +1,43 @@
+# Ambiente e segredos
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+*.spec
+
+# uv
+.venv/
+uv.cache/
+
+# Ruff
+.ruff_cache/
+
+# pytest
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Chainlit
+.chainlit/
+chainlit.md
+
+# LangFuse local (se self-hosted futuramente)
+langfuse-data/
