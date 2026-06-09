@@ -72,12 +72,12 @@ src/finlake_analyst/
 
 | Feature | Status | Spec |
 |---|---|---|
-| INFRA_BASE | Done | [DESIGN_INFRA_BASE.md](.claude/sdd/features/DESIGN_INFRA_BASE.md) |
-| AGENT_CORE | Planned | — |
-| SQL_TOOL | Planned | — |
+| INFRA_BASE | Done | [archive](.claude/sdd/archive/INFRA_BASE/) |
+| SQL_TOOL | Done | [archive](.claude/sdd/archive/SQL_TOOL/) |
 | PROMPTS | Planned | — |
+| AGENT_CORE | Planned | — |
 | OBSERVABILITY | Planned | — |
 
 ## Decisões arquiteturais
 
-Ver ADRs inline em `.claude/sdd/features/DESIGN_INFRA_BASE.md` — seção "Key Decisions".
+Ver ADRs inline nos arquivos DESIGN de cada feature arquivada em `.claude/sdd/archive/`.

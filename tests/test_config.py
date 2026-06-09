@@ -39,7 +39,7 @@ def test_settings_missing_required_field(monkeypatch: pytest.MonkeyPatch) -> Non
     monkeypatch.delenv("ANTHROPIC_API_KEY")
 
     with pytest.raises(ValidationError) as exc_info:
-        Settings()
+        Settings(_env_file=None)  # ignora .env real para isolar o teste
 
     assert "anthropic_api_key" in str(exc_info.value).lower()
 
