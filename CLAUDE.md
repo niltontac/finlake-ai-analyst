@@ -74,7 +74,7 @@ src/finlake_analyst/
 |---|---|---|
 | INFRA_BASE | Done | [archive](.claude/sdd/archive/INFRA_BASE/) |
 | SQL_TOOL | Done | [archive](.claude/sdd/archive/SQL_TOOL/) |
-| PROMPTS | Planned | — |
+| PROMPTS | Done | [archive](.claude/sdd/archive/PROMPTS/) |
 | AGENT_CORE | Planned | — |
 | OBSERVABILITY | Planned | — |
 
