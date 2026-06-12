@@ -22,7 +22,7 @@ def _create_engine(database_url: str) -> Engine:
 def get_database() -> SQLDatabase:
     """Retorna instância singleton de SQLDatabase conectada ao Gold PostgreSQL."""
     settings = get_settings()
-    engine = _create_engine(settings.database_url)
+    engine = _create_engine(settings.finlake_database_url)
     return SQLDatabase(
         engine=engine,
         include_tables=_EXPOSED_TABLES,

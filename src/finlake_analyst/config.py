@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     model_name: str = Field(default="claude-sonnet-4-6", description="LLM model name")
 
     # PostgreSQL Gold (finlake-brasil :5433)
-    database_url: str = Field(
+    finlake_database_url: str = Field(
         ...,
         description="PostgreSQL connection URL — aponta para finlake-brasil :5433",
     )
