@@ -76,7 +76,7 @@ src/finlake_analyst/
 | SQL_TOOL | Done | [archive](.claude/sdd/archive/SQL_TOOL/) |
 | PROMPTS | Done | [archive](.claude/sdd/archive/PROMPTS/) |
 | AGENT_CORE | Done | [archive](.claude/sdd/archive/AGENT_CORE/) |
-| OBSERVABILITY | Planned | — |
+| OBSERVABILITY | Done | [archive](.claude/sdd/archive/OBSERVABILITY/) |
 
 ## Decisões arquiteturais
 
