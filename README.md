@@ -234,6 +234,6 @@ O único ponto de integração é a conexão direta ao PostgreSQL :5433 — os s
 
 13 anos em tecnologia, 5 anos focados em Engenharia de Dados, atualmente especializado em AI Data Engineering — construindo plataformas de dados AI-ready com LLMs, agentes e pipelines inteligentes.
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-niltoncoura-blue)](https://linkedin.com/in/niltoncoura)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-niltontac-blue)](https://linkedin.com/in/niltontac)
 [![GitHub](https://img.shields.io/badge/GitHub-niltontac-black)](https://github.com/niltontac)
 [![FinLake Brasil](https://img.shields.io/badge/Projeto_Pai-finlake--brasil-green)](https://github.com/niltontac/finlake-brasil)
