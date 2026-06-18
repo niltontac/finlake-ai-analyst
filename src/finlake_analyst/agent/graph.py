@@ -39,16 +39,21 @@ def create_agent_graph(sql_prompt: ChatPromptTemplate) -> CompiledStateGraph:
         Grafo compilado pronto para .astream_events(initial_state, version="v2").
     """
     settings = get_settings()
-    llm = ChatAnthropic(
+    sql_llm = ChatAnthropic(
+        model=settings.model_name,
+        api_key=settings.anthropic_api_key,
+        temperature=0,
+    )
+    interpretation_llm = ChatAnthropic(
         model=settings.model_name,
         api_key=settings.anthropic_api_key,
     )
     tool = SqlExecuteTool()
     interpretation_prompt = get_interpretation_prompt()
 
-    generate_sql = make_generate_sql_node(llm, sql_prompt)
+    generate_sql = make_generate_sql_node(sql_llm, sql_prompt)
     execute_sql = make_execute_sql_node(tool)
-    interpret_result = make_interpret_result_node(llm, interpretation_prompt)
+    interpret_result = make_interpret_result_node(interpretation_llm, interpretation_prompt)
 
     graph: StateGraph = StateGraph(AgentState)
 

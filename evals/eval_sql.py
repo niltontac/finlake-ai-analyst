@@ -46,7 +46,7 @@ FROM gold_cvm.fundo_mensal
 WHERE ano_mes BETWEEN '2024-01-01' AND '2024-12-01'
 GROUP BY cnpj_fundo, gestor, tp_fundo
 ORDER BY captacao_total DESC
-LIMIT 10"""
+LIMIT 50"""
 
 _EXPECTED_P3 = """\
 SELECT date, taxa_anual, selic_real, ptax_media

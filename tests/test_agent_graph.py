@@ -78,4 +78,8 @@ def test_create_agent_graph_compiles(
     assert graph is not None
     assert hasattr(graph, "astream_events")
     assert hasattr(graph, "ainvoke")
-    mock_chat_anthropic.assert_called_once()
+    assert mock_chat_anthropic.call_count == 2
+    mock_chat_anthropic.assert_any_call(
+        model="claude-sonnet-4-6", api_key="sk-ant-fake", temperature=0
+    )
+    mock_chat_anthropic.assert_any_call(model="claude-sonnet-4-6", api_key="sk-ant-fake")
