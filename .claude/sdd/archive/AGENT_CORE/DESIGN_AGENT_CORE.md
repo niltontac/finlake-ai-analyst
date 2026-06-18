@@ -162,6 +162,32 @@ Chainlit on_message
 
 ---
 
+### ADR-005: Duas instâncias `ChatAnthropic` separadas — `sql_llm` (temperature=0) e `interpretation_llm` (default)
+
+| Atributo | Valor |
+|---|---|
+| **Status** | Accepted |
+| **Data** | 2026-06-18 |
+
+**Contexto:** O design original usava uma única instância `llm = ChatAnthropic(...)` compartilhada entre `generate_sql` e `interpret_result`. A API da Anthropic usa `temperature=1.0` por padrão quando o parâmetro não é especificado. Isso causava variação de resultado entre execuções idênticas do `eval_sql.py` — o SQL gerado mudava entre rodadas porque o nó `generate_sql` operava com temperature=1.0 (estocástico).
+
+**Decisão:** Criar duas instâncias distintas em `create_agent_graph()`:
+- `sql_llm = ChatAnthropic(..., temperature=0)` → injetado em `make_generate_sql_node`
+- `interpretation_llm = ChatAnthropic(...)` → injetado em `make_interpret_result_node` (sem `temperature`, usa default da API)
+
+**Rationale:** SQL é uma linguagem formal e determinística — para a mesma pergunta e o mesmo prompt, o resultado correto é único. Temperature=0 elimina variação estocástica e estabiliza os evals. Interpretação financeira em linguagem natural se beneficia de variação moderada para soar mais natural; manter o default da API preserva essa qualidade. Separar as instâncias permite tunar cada nó de forma independente sem afetar o outro.
+
+**Alternativas Rejeitadas:**
+1. `temperature=0` para ambas as instâncias — tornaria o texto de interpretação financeira repetitivo e robótico em sessões consecutivas com a mesma pergunta
+2. Parâmetro `temperature` em `create_agent_graph()` — over-engineering; as necessidades são conhecidas e estáveis
+
+**Consequências:**
+- `create_agent_graph()` instancia dois objetos `ChatAnthropic` em vez de um — custo negligível (sem I/O)
+- `eval_sql.py` estabilizou em 5/5 (100%) idêntico em múltiplas rodadas (commit c464a4d)
+- Testes unitários dos nós não são afetados — recebem mocks injetados pelas factories
+
+---
+
 ## File Manifest
 
 | # | Arquivo | Ação | Propósito | Dependências |
@@ -345,16 +371,21 @@ def create_agent_graph(sql_prompt: ChatPromptTemplate) -> CompiledStateGraph:
         Grafo compilado pronto para .astream_events(initial_state, version="v2").
     """
     settings = get_settings()
-    llm = ChatAnthropic(
+    sql_llm = ChatAnthropic(
         model=settings.model_name,
-        api_key=settings.anthropic_api_key,  # type: ignore[arg-type]
+        api_key=settings.anthropic_api_key,
+        temperature=0,
+    )
+    interpretation_llm = ChatAnthropic(
+        model=settings.model_name,
+        api_key=settings.anthropic_api_key,
     )
     tool = SqlExecuteTool()
     interpretation_prompt = get_interpretation_prompt()
 
-    generate_sql = make_generate_sql_node(llm, sql_prompt)
+    generate_sql = make_generate_sql_node(sql_llm, sql_prompt)
     execute_sql = make_execute_sql_node(tool)
-    interpret_result = make_interpret_result_node(llm, interpretation_prompt)
+    interpret_result = make_interpret_result_node(interpretation_llm, interpretation_prompt)
 
     graph: StateGraph = StateGraph(AgentState)
 
@@ -380,7 +411,7 @@ def create_agent_graph(sql_prompt: ChatPromptTemplate) -> CompiledStateGraph:
     return graph.compile()
 ```
 
-> **Nota sobre `api_key`:** `ChatAnthropic` espera `SecretStr` para `api_key`. O `# type: ignore[arg-type]` suprime o warning do mypy pois a biblioteca aceita `str` em runtime. Alternativa: `SecretStr(settings.anthropic_api_key)`.
+> **Nota sobre instâncias LLM:** `sql_llm` usa `temperature=0` (determinístico) para geração SQL; `interpretation_llm` usa o default da API (temperature=1.0) para naturalidade no texto financeiro. Ver ADR-005.
 
 ---
 
@@ -836,6 +867,7 @@ async def run() -> None:
 |---|---|---|---|
 | 1.0 | 2026-06-11 | Nilton Coura | Versão inicial a partir de DEFINE_AGENT_CORE.md |
 | 1.1 | 2026-06-12 | ship-agent | Shipped and archived |
+| 1.2 | 2026-06-18 | Nilton Coura | LLM único separado em `sql_llm` (temperature=0) e `interpretation_llm` (default API) — ADR-005 adicionado; eval_sql.py estabilizou em 5/5 idêntico em múltiplas rodadas (commit c464a4d) |
 
 ---
 

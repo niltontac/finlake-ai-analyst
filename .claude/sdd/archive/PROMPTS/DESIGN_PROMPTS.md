@@ -58,7 +58,7 @@
 
 | Componente | Propósito | Tecnologia |
 |---|---|---|
-| `sql_prompt.py` | Template para geração SQL com few-shot P1 + P3 | `langchain_core.prompts.ChatPromptTemplate` |
+| `sql_prompt.py` | Template para geração SQL com few-shot P1+P3+P_new e regra anti-JOIN BCB | `langchain_core.prompts.ChatPromptTemplate` |
 | `interpretation_prompt.py` | Template para interpretação financeira em português | `langchain_core.prompts.ChatPromptTemplate` |
 | `prompts/__init__.py` | Exporta as duas factory functions para `agent/` | Python stdlib |
 
@@ -137,7 +137,7 @@
 
 | # | Arquivo | Ação | Propósito | Dependências |
 |---|---|---|---|---|
-| 1 | `src/finlake_analyst/prompts/sql_prompt.py` | Criar | `get_sql_prompt()` — ChatPromptTemplate SQL generation com few-shot P1+P3 | None |
+| 1 | `src/finlake_analyst/prompts/sql_prompt.py` | Criar | `get_sql_prompt()` — ChatPromptTemplate SQL generation com few-shot P1+P3+P_new | None |
 | 2 | `src/finlake_analyst/prompts/interpretation_prompt.py` | Criar | `get_interpretation_prompt()` — ChatPromptTemplate interpretação financeira | None |
 | 3 | `src/finlake_analyst/prompts/__init__.py` | Modificar | Exporta `get_sql_prompt`, `get_interpretation_prompt` | 1, 2 |
 | 4 | `tests/test_prompts.py` | Criar | 7 testes estruturais AT-001 a AT-007 | 1, 2, 3 |
@@ -180,17 +180,30 @@ FROM gold_bcb.macro_mensal
 WHERE date >= current_date - interval '12 months'
 ORDER BY date ASC
 
+Pergunta: "Qual o alpha_selic médio dos fundos quando a taxa SELIC anual estava acima de 12%?"
+SQL:
+SELECT AVG(alpha_selic) AS alpha_selic_medio,
+       COUNT(DISTINCT cnpj_fundo) AS qtd_fundos
+FROM gold_cvm.fundo_mensal
+WHERE taxa_anual_bcb > 12
+  AND alpha_selic IS NOT NULL
+
 ## Regras obrigatórias
 
-1. Retorne APENAS o SQL puro — sem blocos de código markdown (```), sem comentários, \
-sem texto explicativo antes ou depois
+1. Retorne APENAS o SQL puro — sem blocos de código markdown (```), \
+sem comentários, sem texto adicional
 2. Somente queries SELECT são permitidas
-3. Em queries de ranking de fundos, sempre filtre: rentabilidade_mes_pct < 1000 \
-(outliers por erro de cadastro CVM)
+3. Em queries que ordenam ou filtram diretamente POR rentabilidade_mes_pct, \
+sempre filtre: rentabilidade_mes_pct < 1000 (outliers por erro de cadastro CVM). \
+Não aplique esse filtro em queries que não usam essa coluna como critério
 4. alpha_selic e alpha_ipca estão disponíveis apenas até 2024-12; \
 para 2025+ esses campos estarão nulos
 5. Não utilize a tabela fundo_diario — use fundo_mensal para análises de fundos
-6. Adicione LIMIT 50 quando o usuário não especificar quantidade\
+6. Adicione LIMIT 50 quando o usuário não especificar quantidade
+7. As colunas taxa_anual_bcb, acumulado_12m_ipca, alpha_selic e alpha_ipca já \
+trazem dados do domínio BCB pré-calculados dentro de gold_cvm.fundo_mensal. \
+NUNCA faça JOIN com gold_bcb quando a pergunta envolver fundos e indicadores \
+macroeconômicos (SELIC, IPCA) ao mesmo tempo — use essas colunas diretamente\
 """
 
 _SQL_HUMAN = "{question}"
@@ -439,6 +452,7 @@ Nenhuma — os templates são constantes Python. Não há configuração via `Se
 | Versão | Data | Autor | Alterações |
 |---|---|---|---|
 | 1.0 | 2026-06-10 | Nilton Coura | Versão inicial |
+| 1.1 | 2026-06-18 | Nilton Coura | Regra 3 estreitada (outlier só quando query usa `rentabilidade_mes_pct` como critério); Regra 7 adicionada (anti-JOIN BCB via colunas denormalizadas); terceiro few-shot P_new (`taxa_anual_bcb > 12`) — eval_sql.py: 3/5 → 5/5 (commits e83f68d e c464a4d) |
 
 ---
 
