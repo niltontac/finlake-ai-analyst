@@ -189,6 +189,9 @@ O agente precisa de dois LLM calls com prompts distintos (geração SQL + interp
 **Por que dois prompts separados?**
 `sql_prompt` instrui o modelo a gerar SQL puro sem markdown — com regras específicas do domínio financeiro brasileiro (filtrar outliers `rentabilidade_mes_pct < 1000`, `alpha_selic` disponível até 2024-12). `interpretation_prompt` instrui um analista financeiro sênior a contextualizar o resultado em termos de SELIC, CDI e alpha. Responsabilidades distintas, prompts distintos.
 
+**Por que `gold_cvm.fundo_mensal` não precisa de JOIN para perguntas com SELIC ou IPCA?**
+A camada Gold do FinLake Brasil já denormaliza os indicadores macro relevantes direto na tabela de fundos (`taxa_anual_bcb`, `acumulado_12m_ipca`, `alpha_selic`, `alpha_ipca`). O prompt instrui explicitamente o modelo a usar essas colunas em vez de fazer JOIN com `gold_bcb` — evita queries mais lentas e complexas em perguntas que cruzam os dois domínios.
+
 **Por que o agente não expõe o SQL ao usuário?**
 O SQL é um detalhe de implementação. O streaming filtra por `langgraph_node == "interpret_result"` — apenas a análise financeira chega ao usuário.
 
@@ -203,6 +206,8 @@ uv run python evals/eval_sql.py
 ```
 
 Avalia se o SQL gerado pelo agente é semanticamente equivalente ao SQL esperado — tolerando variações de formatação e aliases válidos.
+
+**Resultado atual: 5/5 (100%)**, estável em rodadas repetidas — P1: 0.90, P2: 1.00, P3: 1.00, P4: 0.90, P5: 0.70. A geração de SQL roda com `temperature=0`: a API da Anthropic usa `temperature=1.0` por padrão quando o parâmetro não é especificado, o que introduzia variação real entre execuções idênticas com o mesmo prompt. Fixar a temperatura em zero no nó `generate_sql` tornou tanto a produção quanto os evals reprodutíveis — a interpretação financeira em português mantém a temperatura padrão, já que se beneficia de mais naturalidade na escrita.
 
 ---
 
